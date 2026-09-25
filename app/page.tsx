@@ -17,6 +17,7 @@ const surfaces = [
   { href: "/order-ticket", title: "Trader Order Ticket", desc: "Velocity Ladder + live loss-rate shown before confirm." },
   { href: "/regulator", title: "Regulator Dashboard", desc: "Live, read-only harm & FX-flow telemetry." },
   { href: "/ops", title: "Ops Kill-Switch Console", desc: "~29ms propagation to halt leverage by market." },
+  { href: "/architecture", title: "Architecture", desc: "How one hub serves five market spokes." },
 ];
 
 export default function Home() {
@@ -27,15 +28,19 @@ export default function Home() {
         <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight max-w-2xl">
           Turn remittances into ownership. Leverage is earned, never sold.
         </h1>
-        <p className="text-[#9FB0C3] max-w-2xl">
+        <p className="text-[#5B6472] max-w-2xl">
           Compliance-first fintech infrastructure connecting emerging-market retail to global markets —
           without the leverage harm.
+        </p>
+        <p className="text-xs text-[#7A8494] max-w-2xl">
+          All three surfaces below run on one shared live backend — confirm an order or flip a kill
+          switch and watch it show up across tabs in real time.
         </p>
         <div className="flex flex-wrap gap-3 pt-2">
           {surfaces.map((s) => (
             <Link key={s.href} href={s.href} className="card px-4 py-3 hover:border-mocha transition-colors">
               <div className="text-sm font-medium">{s.title}</div>
-              <div className="text-xs text-[#7C8CA0] mt-1">{s.desc}</div>
+              <div className="text-xs text-[#7A8494] mt-1">{s.desc}</div>
             </Link>
           ))}
         </div>
@@ -45,7 +50,7 @@ export default function Home() {
         {painPoints.map((p) => (
           <div key={p.id} className="card p-4">
             <div className="text-xs text-mocha font-mono mb-2">PAIN POINT {p.id}</div>
-            <div className="text-sm text-[#C7D2DE]">{p.text}</div>
+            <div className="text-sm text-[#3B4552]">{p.text}</div>
           </div>
         ))}
       </section>
@@ -56,7 +61,7 @@ export default function Home() {
           {differentiators.map((d) => (
             <div key={d.tag} className="card p-4 flex gap-3">
               <span className="text-xs font-mono text-mocha shrink-0 pt-0.5">{d.tag}</span>
-              <span className="text-sm text-[#C7D2DE]">{d.text}</span>
+              <span className="text-sm text-[#3B4552]">{d.text}</span>
             </div>
           ))}
         </div>
@@ -64,13 +69,13 @@ export default function Home() {
 
       <section className="grid sm:grid-cols-2 gap-4">
         <div className="card p-5">
-          <div className="text-xs text-[#7C8CA0] mb-1">METRIC 01 · PROFITABLE USERS (365D)</div>
+          <div className="text-xs text-[#7A8494] mb-1">METRIC 01 · PROFITABLE USERS (365D)</div>
           <div className="text-2xl font-semibold">
-            36% <span className="text-[#5C6B7A] text-base font-normal">vs 18% baseline</span>
+            36% <span className="text-[#94A0AD] text-base font-normal">vs 18% baseline</span>
           </div>
         </div>
         <div className="card p-5">
-          <div className="text-xs text-[#7C8CA0] mb-1">METRIC 02 · KILL-SWITCH PROPAGATION</div>
+          <div className="text-xs text-[#7A8494] mb-1">METRIC 02 · KILL-SWITCH PROPAGATION</div>
           <div className="text-2xl font-semibold">~29 ms</div>
         </div>
       </section>

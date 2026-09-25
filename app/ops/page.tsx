@@ -1,41 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const initialMarkets = [
-  { code: "IN", name: "India", halted: false },
-  { code: "ID", name: "Indonesia", halted: false },
-  { code: "BR", name: "Brazil", halted: false },
-  { code: "PH", name: "Philippines", halted: true },
-  { code: "AE", name: "UAE", halted: false },
-];
-
-type LogEntry = { time: string; text: string };
+type Market = { code: string; name: string; halted: boolean; flowUSD: number; leverageUsers: number };
+type LogEntry = { id: string; time: string; text: string; kind: string };
+type StoreState = { markets: Market[]; log: LogEntry[] };
 
 export default function OpsConsole() {
-  const [markets, setMarkets] = useState(initialMarkets);
-  const [log, setLog] = useState<LogEntry[]>([
-    { time: "T-00:00", text: "Console initialized. Baseline state loaded from config-flag registry." },
-  ]);
+  const [state, setState] = useState<StoreState | null>(null);
   const [pending, setPending] = useState<string | null>(null);
 
-  const toggle = (code: string) => {
+  const load = async () => {
+    try {
+      const res = await fetch("/api/state", { cache: "no-store" });
+      setState(await res.json());
+    } catch {
+      // keep last-known state on transient fetch failures
+    }
+  };
+
+  useEffect(() => {
+    load();
+    const id = setInterval(load, 4000);
+    return () => clearInterval(id);
+  }, []);
+
+  const toggle = async (code: string) => {
     setPending(code);
-    setTimeout(() => {
-      setMarkets((prev) =>
-        prev.map((m) => (m.code === code ? { ...m, halted: !m.halted } : m))
-      );
-      setPending(null);
-      setLog((prev) => {
-        const m = markets.find((x) => x.code === code)!;
-        const action = m.halted ? "resumed" : "halted";
-        const stamp = new Date().toLocaleTimeString();
-        return [
-          { time: stamp, text: `Leverage ${action} in ${m.name} (${code}) — propagated in 29ms.` },
-          ...prev,
-        ];
+    try {
+      const res = await fetch("/api/kill-switch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
       });
-    }, 290);
+      const data = await res.json();
+      setState(data);
+    } finally {
+      setPending(null);
+    }
   };
 
   return (
@@ -43,21 +45,22 @@ export default function OpsConsole() {
       <div>
         <p className="text-mocha text-sm font-medium">OPS KILL-SWITCH CONSOLE</p>
         <h1 className="text-2xl font-semibold mt-1">Market-scoped leverage kill-switch</h1>
-        <p className="text-sm text-[#9FB0C3] mt-2 max-w-2xl">
+        <p className="text-sm text-[#5B6472] mt-2 max-w-2xl">
           Halts new leveraged positions in a single jurisdiction without touching the other four —
-          hub-and-spoke, no forked codebase.
+          hub-and-spoke, no forked codebase. Changes here write to the same backend the regulator
+          dashboard polls, so a flip shows up there within seconds.
         </p>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
-        {markets.map((m) => (
+        {(state?.markets ?? []).map((m) => (
           <div key={m.code} className="card p-4 flex items-center justify-between">
             <div>
               <div className="text-sm font-medium">
                 <span className="font-mono text-xs text-mocha mr-2">{m.code}</span>
                 {m.name}
               </div>
-              <div className="text-xs text-[#7C8CA0] mt-1">
+              <div className="text-xs text-[#7A8494] mt-1">
                 {m.halted ? "Leverage halted" : "Leverage active"}
               </div>
             </div>
@@ -79,11 +82,11 @@ export default function OpsConsole() {
       </div>
 
       <div className="card p-4">
-        <div className="text-xs text-[#7C8CA0] mb-3">AUDIT LOG</div>
+        <div className="text-xs text-[#7A8494] mb-3">SHARED AUDIT LOG (also visible to regulator)</div>
         <div className="space-y-2 max-h-64 overflow-y-auto font-mono text-xs">
-          {log.map((entry, i) => (
-            <div key={i} className="flex gap-3 text-[#9FB0C3]">
-              <span className="text-[#5C6B7A] shrink-0">{entry.time}</span>
+          {(state?.log ?? []).map((entry) => (
+            <div key={entry.id} className="flex gap-3 text-[#5B6472]">
+              <span className="text-[#94A0AD] shrink-0">{new Date(entry.time).toLocaleTimeString()}</span>
               <span>{entry.text}</span>
             </div>
           ))}

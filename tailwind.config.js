@@ -4,13 +4,13 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        ink: "#0B0F14",
-        panel: "#11161D",
-        line: "#232B35",
-        mocha: "#C9A27A",
-        good: "#3FB27F",
-        bad: "#E5534B",
-        warn: "#E0A93B",
+        ink: "#1E2329",
+        panel: "#FFFFFF",
+        line: "#E3DED3",
+        mocha: "#A9723F",
+        good: "#1F9D62",
+        bad: "#D14343",
+        warn: "#B4791F",
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],

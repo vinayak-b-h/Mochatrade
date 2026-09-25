@@ -13,7 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen">
         <NavBar />
         <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">{children}</main>
-        <footer className="max-w-6xl mx-auto px-4 sm:px-6 py-10 text-xs text-[#5C6B7A]">
+        <footer className="max-w-6xl mx-auto px-4 sm:px-6 py-10 text-xs text-[#94A0AD]">
           MochaTrade prototype — built for the Marketsphere Hackathon (Finovators, ACM RVCE).
         </footer>
       </body>

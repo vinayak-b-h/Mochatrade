@@ -8,6 +8,7 @@ const links = [
   { href: "/order-ticket", label: "Trader Order Ticket" },
   { href: "/regulator", label: "Regulator Dashboard" },
   { href: "/ops", label: "Ops Kill-Switch" },
+  { href: "/architecture", label: "Architecture" },
 ];
 
 export default function NavBar() {
@@ -16,7 +17,7 @@ export default function NavBar() {
     <header className="border-b border-line">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full bg-mocha flex items-center justify-center text-ink text-xs font-bold">
+          <div className="w-7 h-7 rounded-full bg-mocha flex items-center justify-center text-white text-xs font-bold">
             M
           </div>
           <span className="font-semibold tracking-tight">MochaTrade</span>
