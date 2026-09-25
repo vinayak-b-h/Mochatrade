@@ -4,7 +4,7 @@ type Point = { t: number; totalFlow: number };
 
 export default function LineChart({ data }: { data: Point[] }) {
   if (data.length < 2) {
-    return <div className="text-xs text-[#94A0AD] h-36 flex items-center">Collecting live data…</div>;
+    return <div className="text-xs text-[#5E6B85] h-36 flex items-center">Collecting live data…</div>;
   }
 
   const width = 600;
@@ -29,13 +29,13 @@ export default function LineChart({ data }: { data: Point[] }) {
     <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-36">
       <defs>
         <linearGradient id="flowGradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#A9723F" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#A9723F" stopOpacity="0" />
+          <stop offset="0%" stopColor="#D8B067" stopOpacity="0.35" />
+          <stop offset="100%" stopColor="#D8B067" stopOpacity="0" />
         </linearGradient>
       </defs>
       <path d={areaPath} fill="url(#flowGradient)" stroke="none" />
-      <path d={path} fill="none" stroke="#A9723F" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-      <circle cx={last[0]} cy={last[1]} r="3.5" fill="#A9723F" />
+      <path d={path} fill="none" stroke="#D8B067" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+      <circle cx={last[0]} cy={last[1]} r="3.5" fill="#D8B067" />
     </svg>
   );
 }

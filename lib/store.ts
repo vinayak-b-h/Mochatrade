@@ -4,17 +4,19 @@ export type Market = {
   halted: boolean;
   flowUSD: number; // in millions
   leverageUsers: number;
+  maxLeverage: number; // config-flag: highest Velocity Ladder rung allowed here
 };
 
 export type LogEntry = {
   id: string;
   time: string;
   text: string;
-  kind: "system" | "order" | "killswitch";
+  kind: "system" | "order" | "killswitch" | "config" | "rejected";
 };
 
 export type Order = {
   id: string;
+  marketCode: string;
   amount: number;
   rungLevel: number;
   rungLabel: string;
@@ -42,11 +44,11 @@ const globalForStore = globalThis as unknown as { __mochatradeStore?: StoreState
 function seedState(): StoreState {
   const state: StoreState = {
     markets: [
-      { code: "IN", name: "India", halted: false, flowUSD: 182, leverageUsers: 41200 },
-      { code: "ID", name: "Indonesia", halted: false, flowUSD: 96, leverageUsers: 18400 },
-      { code: "BR", name: "Brazil", halted: false, flowUSD: 74, leverageUsers: 12100 },
-      { code: "PH", name: "Philippines", halted: true, flowUSD: 61, leverageUsers: 9800 },
-      { code: "AE", name: "UAE", halted: false, flowUSD: 33, leverageUsers: 4100 },
+      { code: "IN", name: "India", halted: false, flowUSD: 182, leverageUsers: 41200, maxLeverage: 10 },
+      { code: "ID", name: "Indonesia", halted: false, flowUSD: 96, leverageUsers: 18400, maxLeverage: 20 },
+      { code: "BR", name: "Brazil", halted: false, flowUSD: 74, leverageUsers: 12100, maxLeverage: 10 },
+      { code: "PH", name: "Philippines", halted: true, flowUSD: 61, leverageUsers: 9800, maxLeverage: 5 },
+      { code: "AE", name: "UAE", halted: false, flowUSD: 33, leverageUsers: 4100, maxLeverage: 20 },
     ],
     log: [
       {
@@ -69,10 +71,20 @@ function recordSnapshot(state: StoreState) {
   if (state.history.length > 40) state.history.shift();
 }
 
+function pushLog(state: StoreState, entry: Omit<LogEntry, "id" | "time">) {
+  state.log.unshift({ id: crypto.randomUUID(), time: new Date().toISOString(), ...entry });
+  state.log = state.log.slice(0, 40);
+}
+
 export function getStore(): StoreState {
   if (!globalForStore.__mochatradeStore) {
     globalForStore.__mochatradeStore = seedState();
   }
+  return globalForStore.__mochatradeStore;
+}
+
+export function resetStore(): StoreState {
+  globalForStore.__mochatradeStore = seedState();
   return globalForStore.__mochatradeStore;
 }
 
@@ -82,28 +94,68 @@ export function toggleKillSwitch(code: string): StoreState {
   if (!market) return state;
 
   market.halted = !market.halted;
-  state.log.unshift({
-    id: crypto.randomUUID(),
-    time: new Date().toISOString(),
+  pushLog(state, {
     text: `Leverage ${market.halted ? "halted" : "resumed"} in ${market.name} (${code}) — propagated in 29ms.`,
     kind: "killswitch",
   });
-  state.log = state.log.slice(0, 30);
   recordSnapshot(state);
   return state;
 }
 
+export function setMaxLeverage(code: string, maxLeverage: number): StoreState {
+  const state = getStore();
+  const market = state.markets.find((m) => m.code === code);
+  if (!market) return state;
+
+  const previous = market.maxLeverage;
+  market.maxLeverage = maxLeverage;
+  pushLog(state, {
+    text: `Max leverage in ${market.name} (${code}) changed ${previous}x → ${maxLeverage}x via config-flag.`,
+    kind: "config",
+  });
+  return state;
+}
+
+export type AddOrderResult =
+  | { ok: true; state: StoreState }
+  | { ok: false; error: string; state: StoreState };
+
 export function addOrder(input: {
+  marketCode: string;
   amount: number;
   rungLevel: number;
   rungLabel: string;
   lossRate: number;
-}): StoreState {
+}): AddOrderResult {
   const state = getStore();
-  const exposure = input.amount * input.rungLevel;
+  const market = state.markets.find((m) => m.code === input.marketCode);
 
+  if (!market) {
+    return { ok: false, error: "Unknown market.", state };
+  }
+  if (market.halted) {
+    pushLog(state, {
+      text: `Order rejected: leverage is currently halted in ${market.name} (${market.code}).`,
+      kind: "rejected",
+    });
+    return { ok: false, error: `Leverage is halted in ${market.name} right now.`, state };
+  }
+  if (input.rungLevel > market.maxLeverage) {
+    pushLog(state, {
+      text: `Order rejected: ${input.rungLabel} exceeds ${market.name}'s ${market.maxLeverage}x config-flag limit.`,
+      kind: "rejected",
+    });
+    return {
+      ok: false,
+      error: `${market.name} caps leverage at ${market.maxLeverage}x right now.`,
+      state,
+    };
+  }
+
+  const exposure = input.amount * input.rungLevel;
   const order: Order = {
     id: crypto.randomUUID(),
+    marketCode: market.code,
     amount: input.amount,
     rungLevel: input.rungLevel,
     rungLabel: input.rungLabel,
@@ -114,20 +166,13 @@ export function addOrder(input: {
   state.orders.unshift(order);
   state.orders = state.orders.slice(0, 50);
 
-  // Simulate the order's remittance flowing into a live (non-halted) market.
-  const openMarkets = state.markets.filter((m) => !m.halted);
-  const pool = openMarkets.length > 0 ? openMarkets : state.markets;
-  const market = pool[Math.floor(Math.random() * pool.length)];
   market.flowUSD = Math.round((market.flowUSD + input.amount / 1_000_000) * 100) / 100;
   market.leverageUsers += 1;
 
-  state.log.unshift({
-    id: crypto.randomUUID(),
-    time: new Date().toISOString(),
-    text: `Order confirmed: $${input.amount.toLocaleString()} at ${input.rungLabel} (${input.lossRate}% 365d loss-rate) — logged to Supervisory Telemetry.`,
+  pushLog(state, {
+    text: `Order confirmed in ${market.name}: $${input.amount.toLocaleString()} at ${input.rungLabel} (${input.lossRate}% 365d loss-rate) — logged to Supervisory Telemetry.`,
     kind: "order",
   });
-  state.log = state.log.slice(0, 30);
   recordSnapshot(state);
-  return state;
+  return { ok: true, state };
 }

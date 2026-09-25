@@ -31,7 +31,7 @@ export default function Architecture() {
       <div>
         <p className="text-mocha text-sm font-medium">SCALABLE BY DESIGN</p>
         <h1 className="text-2xl font-semibold mt-1">Hub-and-spoke architecture</h1>
-        <p className="text-sm text-[#5B6472] mt-2 max-w-2xl">
+        <p className="text-sm text-[#9FB0C9] mt-2 max-w-2xl">
           One engine, five markets in 18 months, no forked codebase. Compliance rules live as
           config-flags on each spoke, not as branches of the core.
         </p>
@@ -48,35 +48,35 @@ export default function Architecture() {
                 y1={l.y1}
                 x2={l.x2}
                 y2={l.y2}
-                stroke="#E3DED3"
+                stroke="#1E2A45"
                 strokeWidth="2"
               />
             );
           })}
 
-          <circle cx={HUB.cx} cy={HUB.cy} r={HUB.r} fill="#FFFFFF" stroke="#A9723F" strokeWidth="2" />
-          <text x={HUB.cx} y={HUB.cy - 5} textAnchor="middle" fill="#1E2329" fontSize="15" fontWeight="600">
+          <circle cx={HUB.cx} cy={HUB.cy} r={HUB.r} fill="#10192E" stroke="#D8B067" strokeWidth="2" />
+          <text x={HUB.cx} y={HUB.cy - 5} textAnchor="middle" fill="#E7ECF5" fontSize="15" fontWeight="600">
             MochaTrade
           </text>
-          <text x={HUB.cx} y={HUB.cy + 14} textAnchor="middle" fill="#5B6472" fontSize="11">
+          <text x={HUB.cx} y={HUB.cy + 14} textAnchor="middle" fill="#9FB0C9" fontSize="11">
             Core Engine
           </text>
 
           {spokes.map((m) => (
             <g key={m.code}>
-              <circle cx={m.cx} cy={m.cy} r={SPOKE_R} fill="#F7F5F1" stroke="#E3DED3" strokeWidth="2" />
+              <circle cx={m.cx} cy={m.cy} r={SPOKE_R} fill="#0A1120" stroke="#1E2A45" strokeWidth="2" />
               <text
                 x={m.cx}
                 y={m.cy - 4}
                 textAnchor="middle"
-                fill="#A9723F"
+                fill="#D8B067"
                 fontSize="12"
                 fontFamily="ui-monospace, monospace"
                 fontWeight="600"
               >
                 {m.code}
               </text>
-              <text x={m.cx} y={m.cy + 13} textAnchor="middle" fill="#5B6472" fontSize="10.5">
+              <text x={m.cx} y={m.cy + 13} textAnchor="middle" fill="#9FB0C9" fontSize="10.5">
                 {m.name}
               </text>
             </g>
@@ -87,7 +87,7 @@ export default function Architecture() {
       <div className="grid sm:grid-cols-2 gap-4">
         <div className="card p-4">
           <div className="text-sm font-medium mb-2">What the hub owns</div>
-          <ul className="text-sm text-[#5B6472] space-y-1.5 list-disc list-inside">
+          <ul className="text-sm text-[#9FB0C9] space-y-1.5 list-disc list-inside">
             <li>Velocity Ladder logic — behaviour + literacy gating</li>
             <li>Order execution and exposure calculation</li>
             <li>Supervisory Telemetry event log</li>
@@ -95,7 +95,7 @@ export default function Architecture() {
         </div>
         <div className="card p-4">
           <div className="text-sm font-medium mb-2">What each spoke configures</div>
-          <ul className="text-sm text-[#5B6472] space-y-1.5 list-disc list-inside">
+          <ul className="text-sm text-[#9FB0C9] space-y-1.5 list-disc list-inside">
             <li>Max leverage per jurisdiction</li>
             <li>KYC / AML thresholds</li>
             <li>Kill-switch default state</li>
@@ -105,7 +105,7 @@ export default function Architecture() {
 
       <div className="card p-4">
         <div className="text-sm font-medium mb-2">In this prototype</div>
-        <p className="text-sm text-[#5B6472]">
+        <p className="text-sm text-[#9FB0C9]">
           The three surfaces you clicked through — trader order ticket, regulator dashboard, ops
           console — all read and write a single shared store (
           <code className="text-mocha text-xs">lib/store.ts</code>, exposed via{" "}
